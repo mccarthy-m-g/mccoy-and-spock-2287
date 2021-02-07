@@ -1,0 +1,100 @@
+---
+title: "Wearing a red Starfleet uniform is bad for your health"
+description: |
+  A new article created using the Distill format.
+author:
+  - name: Leonard H. McCoy 
+    url: https://memory-alpha.fandom.com/wiki/Leonard_McCoy
+    affiliation: Starfleet
+    affiliation_url: https://memory-alpha.fandom.com/wiki/Starfleet
+  - name: S'chn T'gal Spock 
+    url: https://memory-alpha.fandom.com/wiki/Spock
+    affiliation: Starfleet
+    affiliation_url: https://memory-alpha.fandom.com/wiki/Starfleet
+date: "02-13-2287"
+bibliography: references.bib
+output: distill::distill_article
+---
+
+```{r setup, include=FALSE}
+# Ensure the project root is set up correctly using {here} --------------------
+here::i_am("mccoy-and-spock-2287.Rmd")
+
+# Load packages used in this manuscript ---------------------------------------
+# Package descriptions were generated using the {annotater} package, available
+# here: https://github.com/luisDVA/annotater
+library(here) # A Simpler Way to Find Your Files
+library(tidyverse) # Easily Install and Load the 'Tidyverse'
+library(glue) # Interpreted String Literals
+library(english) # Translate Integers into English
+
+# Set default options for knitr code chunks -----------------------------------
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Introduction
+
+> “Enterprise Medical Log, Stardate 5327.4. Dr. Leonard McCoy recording. Captain Kirk and First Officer Spock were rescued 48 hours ago, along with several deceased members of the away team. They do not know why the creature ignored them during the attack, but I have my suspicions. The victims were all wearing red shirts.”---@mccoy5327
+
+I am haunted by an uncomfortable reality: Over the past several weeks the number of deaths I have listed on the *Enterprise*^[The USS Enterprise (NCC-1701), a Constitution-class starship launched by Starfleet in the year 2245.] is growing, and no matter the circumstance they all share one thing in common—each and every one of them wore a red uniform. I approached First Officer Spock with my concerns, but he brushed me off as thinking with undue emotions. Our operations division wears red uniforms, so this pattern of deaths was “logical" [@spock2287].
+
+Despite that damn Vulcan’s logic, he could not explain why himself and Captain Kirk had not yet suffered similar fates. I can find no reason why they are still alive, except, possibly, that the colour of their uniforms is somehow involved. Although improbable, it is the only hypothesis I have. Captain Kirk has employed Spock and I to conduct a study to investigate.
+
+The aim of our study is simple: We will test whether the uniform colour of Starfleet officers on board the Enterprise cause them to suffer more severe injuries during away missions. I hypothesize that, regardless of their division, officers wearing red uniforms will suffer more severe injuries. Spock states that this is illogical, and hypothesizes that members of the operations division will continue to suffer more severe injuries no matter their uniform colour.
+
+# Methodology
+
+```{r study-1-data}
+# Load study data for analysis
+redshirts <- read_csv(here("Data", "redshirts.csv"))
+```
+
+## Participants
+
+```{r participants}
+# Get participant demographics for printing -----------------------------------
+demographics <- redshirts %>%
+  group_by(gender) %>%
+  summarise(n = n(),
+            age_mean = glue("$\\mathit{{M_{{age}}}} = {sprintf('%.2f', mean(age))}$"),
+            age_sd = glue("$\\mathit{{SD_{{age}}}} = {sprintf('%.2f', sd(age))}$")
+            ) %>%
+  pivot_wider(names_from = gender, values_from = n:age_sd)
+
+# Get the number of excluded participants for printing ------------------------
+# I'm just using this code to demonstrate printing numbers in the body as
+# English words. If you actually wanted to exclude participants you'd want to
+# filter them out of your dataset and calculate the total excluded from there.
+exclusions <- str_to_title(english(6)) # for lowercase wrap in as.character()
+```
+
+`r nrow(redshirts)` Starfleet officers on board the starship Enterprise participated in this study, `r demographics$n_man` of which identified as men (`r demographics$age_mean_man`, `r demographics$age_sd_man`) and `r demographics$n_woman` as women (`r demographics$age_mean_woman`, `r demographics$age_sd_woman`). Myself, First Officer Spock, and Captain Kirk did not participate in the study. `r exclusions` redshirts who were supposed to participate were excluded from the study. A can be seen in Figure\ \@ref(fig:rip-redshirts), Captain Kirk foolishly sent them on an away mission; we have lost all contact since.
+
+<aside>
+<!-- ------------------------------------------------------------------------------------------ -->
+(ref:rip-redshirts) Captain Kirk sending a team of redshirts on an away mission to the Klingon supermarkets on Qo'noS.
+
+```{r rip-redshirts, fig.cap="(ref:rip-redshirts)"}
+knitr::include_graphics(here("Figures", "redshirt-lineup.jpeg"))
+```
+</aside>
+
+## Design
+
+A 3 (uniform colour: blue, yellow, red) x 3 (division: science/medical, command, operations) design will be used to test our hypotheses. See Figure\ \@ref(fig:starfleet-divisions) for the exacts.
+
+<aside>
+<!-- ------------------------------------------------------------------------------------------ -->
+(ref:starfleet-divisions) Depiction of Starfleet divisions and their respective uniform colours.
+
+```{r starfleet-divisions, fig.cap="(ref:starfleet-divisions)"}
+knitr::include_graphics(here("Figures", "starfleet-divisions.jpg"))
+```
+</aside>
+
+# Results
+
+
+
+# Discussion
+
