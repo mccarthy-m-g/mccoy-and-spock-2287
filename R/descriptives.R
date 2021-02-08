@@ -25,8 +25,8 @@
 #'
 #' @export
 #' @seealso [dplyr::groupy_by()], [dplyr::summarise()]
-get_descriptives <- function(.data, dv, group_by, na.rm = FALSE) {
-  .data %>%
+get_descriptives <- function(.data, dv, group_by, na.rm = FALSE, wide = FALSE) {
+  df <- .data %>%
     dplyr::group_by(dplyr::across({{group_by}})) %>%
     dplyr::summarise(n         = dplyr::n(),
                      mean      = mean({{dv}}, na.rm = na.rm),
@@ -41,6 +41,13 @@ get_descriptives <- function(.data, dv, group_by, na.rm = FALSE) {
                        abs(qnorm((1-0.95)/2)) *
                        sd({{dv}}, na.rm = na.rm)/sqrt(dplyr::n())
                        )
-    ) %>%
-    tidyr::pivot_wider(names_from = {{group_by}}, values_from = n:conf_high)
+    )
+
+  if (wide) {
+    df <- tidyr::pivot_wider(df,
+                             names_from = {{group_by}},
+                             values_from = n:conf_high)
+  }
+
+  df
 }

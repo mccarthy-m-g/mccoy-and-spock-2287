@@ -22,15 +22,15 @@ df_2way_3x3 <- tibble(ID = 1:423,
                                              each = 47,
                                              length.out = 423)
                       ),
-                      injury_severity = c(round(rnorm(n = 47, mean = 3, sd = 1.5)), # A*a
-                                          round(rnorm(n = 47, mean = 4, sd = 1.2)), # A*b
-                                          round(rnorm(n = 47, mean = 8, sd = 2.0)), # A*c #high
-                                          round(rnorm(n = 47, mean = 4, sd = 1.0)), # B*a
-                                          round(rnorm(n = 47, mean = 3, sd = 1.8)), # B*b
-                                          round(rnorm(n = 47, mean = 8, sd = 1.0)), # B*c #high
-                                          round(rnorm(n = 47, mean = 3, sd = 1.3)), # C*a
-                                          round(rnorm(n = 47, mean = 5, sd = 2.0)), # C*b
-                                          round(rnorm(n = 47, mean = 8, sd = 1.1))  # C*c #high
+                      injury_severity = c(round(rnorm(n = 47, mean = 4.5, sd = 1.4)), # A*a
+                                          round(rnorm(n = 47, mean = 4.25, sd = 1.2)), # A*b
+                                          round(rnorm(n = 47, mean = 7.8, sd = 1.5)), # A*c #high
+                                          round(rnorm(n = 47, mean = 3.75, sd = 1.3)), # B*a
+                                          round(rnorm(n = 47, mean = 4, sd = 1.4)), # B*b
+                                          round(rnorm(n = 47, mean = 7.5, sd = 1.5)), # B*c #high
+                                          round(rnorm(n = 47, mean = 4, sd = 1.3)), # C*a
+                                          round(rnorm(n = 47, mean = 4.1, sd = 1.6)), # C*b
+                                          round(rnorm(n = 47, mean = 8, sd = 1.4))  # C*c #high
                       )
 ) %>%
   mutate(age = case_when(age < 18 ~ 23,

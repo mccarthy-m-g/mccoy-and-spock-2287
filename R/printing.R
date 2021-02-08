@@ -6,6 +6,7 @@
 #'
 #' @param x A numeric vector.
 #' @param digits An integer indicating the number of decimal places to be used.
+#' @param abs A logical indicating if printed numbers should be absolute.
 #'
 #' @returns
 #' `print_num()` returns a A character vector of length that of the longest
@@ -17,8 +18,11 @@
 #'
 #' @export
 #' @seealso [sprintf()]
-print_num <- function(x, digits = 2) {
-  sprintf(paste0("%.", digits, "f"), x)
+print_num <- function(x, digits = 2, abs = FALSE) {
+  ifelse(abs,
+         sprintf(paste0("%.", digits, "f"), abs(x)),
+         sprintf(paste0("%.", digits, "f"), x)
+         )
 }
 
 #' Format p-values as strings for printing
