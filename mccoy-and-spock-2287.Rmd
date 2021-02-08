@@ -13,7 +13,10 @@ author:
     affiliation_url: https://memory-alpha.fandom.com/wiki/Starfleet
 date: "02-13-2287"
 bibliography: references.bib
-output: distill::distill_article
+csl: "apa.csl"
+output:
+  distill::distill_article:
+    theme: theme.css
 ---
 
 ```{r setup, include=FALSE}
@@ -25,8 +28,17 @@ here::i_am("mccoy-and-spock-2287.Rmd")
 # here: https://github.com/luisDVA/annotater
 library(here) # A Simpler Way to Find Your Files
 library(tidyverse) # Easily Install and Load the 'Tidyverse'
+library(broom)
 library(glue) # Interpreted String Literals
 library(english) # Translate Integers into English
+library(car)
+library(moments)
+library(kableExtra)
+
+# Load R scripts located in R/ ------------------------------------------------
+source(here("R", "printing.R"))
+source(here("R", "descriptives.R"))
+source(here("R", "assumptions.R"))
 
 # Set default options for knitr code chunks -----------------------------------
 knitr::opts_chunk$set(echo = FALSE)
@@ -56,8 +68,8 @@ redshirts <- read_csv(here("Data", "redshirts.csv"))
 demographics <- redshirts %>%
   group_by(gender) %>%
   summarise(n = n(),
-            age_mean = glue("$\\mathit{{M_{{age}}}} = {sprintf('%.2f', mean(age))}$"),
-            age_sd = glue("$\\mathit{{SD_{{age}}}} = {sprintf('%.2f', sd(age))}$")
+            age_mean = glue("$\\mathit{{M_{{age}}}} = {print_num(mean(age))}$"),
+            age_sd = glue("$\\mathit{{SD_{{age}}}} = {print_num(sd(age))}$")
             ) %>%
   pivot_wider(names_from = gender, values_from = n:age_sd)
 
@@ -68,7 +80,7 @@ demographics <- redshirts %>%
 exclusions <- str_to_title(english(6)) # for lowercase wrap in as.character()
 ```
 
-`r nrow(redshirts)` Starfleet officers on board the starship Enterprise participated in this study, `r demographics$n_man` of which identified as men (`r demographics$age_mean_man`, `r demographics$age_sd_man`) and `r demographics$n_woman` as women (`r demographics$age_mean_woman`, `r demographics$age_sd_woman`). Myself, First Officer Spock, and Captain Kirk did not participate in the study. `r exclusions` redshirts who were supposed to participate were excluded from the study. A can be seen in Figure\ \@ref(fig:rip-redshirts), Captain Kirk foolishly sent them on an away mission; we have lost all contact since.
+`r nrow(redshirts)` Starfleet officers on board the starship Enterprise participated in our study, `r demographics$n_man` of which identified as men (`r demographics$age_mean_man`, `r demographics$age_sd_man`) and `r demographics$n_woman` as women (`r demographics$age_mean_woman`, `r demographics$age_sd_woman`). Myself, First Officer Spock, and Captain Kirk did not participate in the study. `r exclusions` redshirts who were supposed to participate were excluded from the study. A can be seen in Figure\ \@ref(fig:rip-redshirts), Captain Kirk foolishly sent them on an away mission; we have lost all contact since.
 
 <aside>
 <!-- ------------------------------------------------------------------------------------------ -->
@@ -81,7 +93,7 @@ knitr::include_graphics(here("Figures", "redshirt-lineup.jpeg"))
 
 ## Design
 
-A 3 (uniform colour: blue, yellow, red) x 3 (division: science/medical, command, operations) design will be used to test our hypotheses. See Figure\ \@ref(fig:starfleet-divisions) for the exacts.
+We used a 3x3 independent design to test our hypotheses, with division (science/medical, command, operations) and uniform colour (blue, yellow, red) as independent variables. The Starfleet designations for divisions and their uniform colours can be seen in Figure\ \@ref(fig:starfleet-divisions). Severity of injury---our dependent variable---was measured on a 10-point scale developed by @phlox2153, where one represented the lowest severity and ten the highest. Examples of lower severity injuries include broken bones, cellular damage, or curable infections obtained during copulation with an alien species. Higher severity injuries include decapitation by Bat'leth, exposure to delta-particle radiation, or being crushed by Tribbles.
 
 <aside>
 <!-- ------------------------------------------------------------------------------------------ -->
@@ -92,9 +104,96 @@ knitr::include_graphics(here("Figures", "starfleet-divisions.jpg"))
 ```
 </aside>
 
+## Procedure
+
+Our procedure was simple, although imperfect as First Officer Spock wants us to remind you. Each Starfleet officer was randomly assigned a uniform colour they were to wear over a one month period, however, they remained within their current division due to operational constraints. Aside from this, each officer continued with their regular duties aboard the Enterprise. My medical team and I then recorded the severity of injury, division, and uniform colour for any patients that came into sickbay during the study period. Patients with multiple visits had their severity of injury scores averaged at the end of the period so their was only one score per participant.
+
 # Results
 
+## Two-way ANOVA assumptions
 
+```{r assumptions}
+# Get skewness, kurtosis and Shapiro-Wilk (normality) -------------------------
+# - Skewness should be in the range of +/- 2
+# - Kurtosis should be in the range of +/- 7
+# - Significance indicates the assumption is violated
+assumption_normality <-
+  test_normality(redshirts,
+                 dv = injury_severity,
+                 group_by = c(division, uniform_colour)) %>%
+  # Prepare table for printing
+  mutate(cell = str_to_title(str_replace_all(cell, "_", " "))) %>%
+  mutate(across(skewness:statistic, print_num)) %>%
+  mutate(p.value = print_p(p.value, in_table = TRUE)) %>%
+  rename("**Cell**" = cell,
+         "**Skewness**" = skewness,
+         "**Kurtosis**" = kurtosis,
+         "***W***" = statistic,
+         "***df***" = df,
+         "***p***" = p.value)
+
+# Run Levene's test on DV (homogeneity of variance) ---------------------------
+# - Significance indicates the assumption is violated
+assumption_variance <-
+  car::leveneTest(injury_severity ~ division*uniform_colour,
+                  data = redshirts,
+                  center = mean) %>%
+  # Prepare for printing
+  broom::tidy() %>%
+  mutate(statistic = print_num(statistic)) %>%
+  mutate(p.value = print_p(p.value)) %>%
+  mutate(print = glue("$F({df}, {df.residual}) = {statistic}$, $p {p.value}$"))
+```
+
+Our data met two of the assumptions for an independent two-way ANOVA. Specifically, injury severity was measured on an interval scale, and all observations for injury severity were independent. Two assumptions were not met. Shapiro-Wilk’s test of normality showed that the distribution of injury severity within each of the experiment cells was significantly different from a normal distribution (see Table\ \@ref(tab:normality-table)); and Levene’s test showed that the variances for injury severity between each of the experiment cells were not equal, `r assumption_variance$print`. However, as discussed in @mudd2266, meeting these assumptions is unnecessary for our analyses due to statistical advances in the late 21st century. Because of this, we continued with our analysis as planned.
+
+```{r normality-table, layout="l-body-outset"}
+# Print table with caption in manuscript
+caption <- "Table Showing Assumption of Normality Tests."
+kbl(assumption_normality,
+          caption = caption,
+          escape = FALSE,
+          align = c("l", rep("r", 5))) %>%
+  kable_minimal(lightable_options = "hover",
+                html_font = "Amiri, serif")
+```
+
+## Two-way ANOVA results
+
+```{r descriptive-statistics}
+# Get descriptive statistics for printing
+descriptives <- get_descriptives(redshirts,
+                                 dv = injury_severity,
+                                 group_by = c(division, uniform_colour))
+```
+
+```{r two-way-anova}
+# Run the two-way ANOVA with Type II sums of squares to test main effects -----
+model <- aov(injury_severity ~ division*uniform_colour, data = redshirts)
+
+# Get the two-way ANOVA table for statistical significance interpretation
+model_summary <- tidy(model)
+
+# Get effect sizes for practical significance interpretation
+effsize <- effectsize::omega_squared(model) %>%
+  as_tibble() %>%
+  select(term = Parameter, omegasq.partial = Omega2_partial)
+
+# Prepare model for printing --------------------------------------------------
+model_list <- model_summary %>%
+  left_join(effsize) %>%
+  mutate(term = str_replace(term, ":", "_x_")) %>%
+  mutate(df.residual = pull(filter(model_summary, term == "Residuals"), df),
+         .after = df) %>%
+  mutate(across(sumsq:statistic, print_num)) %>%
+  mutate(across(c(p.value, omegasq.partial), print_p)) %>%
+  mutate(print = glue("$F({df}, {df.residual}) = {statistic}$, ",
+                      "$p {p.value}$, ",
+                      "$\\omega^2_p {omegasq.partial}$")) %>%
+  split(.$term)
+```
+
+WORK ON THIS NOW `r model_list$division$print`
 
 # Discussion
 

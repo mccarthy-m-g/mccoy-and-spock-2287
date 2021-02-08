@@ -14,7 +14,7 @@ df_2way_3x3 <- tibble(ID = 1:423,
                                       replace = TRUE,
                                       prob = c(0.75, 0.25)
                       ),
-                      division = c(rep("science/medical", 141),
+                      division = c(rep("science_medical", 141),
                                    rep("command", 141),
                                    rep("operations", 141)
                       ),
@@ -22,15 +22,15 @@ df_2way_3x3 <- tibble(ID = 1:423,
                                              each = 47,
                                              length.out = 423)
                       ),
-                      injury_severity = c(round(rnorm(n = 47, mean = 3, sd = 2.5)), # A*a
-                                          round(rnorm(n = 47, mean = 2, sd = 2)), # A*b
-                                          round(rnorm(n = 47, mean = 6, sd = 3)), # A*c #high
-                                          round(rnorm(n = 47, mean = 4, sd = 1)), # B*a
-                                          round(rnorm(n = 47, mean = 3, sd = 3)), # B*b
-                                          round(rnorm(n = 47, mean = 8, sd = 2)), # B*c #high
-                                          round(rnorm(n = 47, mean = 3, sd = 1)), # C*a
-                                          round(rnorm(n = 47, mean = 5, sd = 3)), # C*b
-                                          round(rnorm(n = 47, mean = 8, sd = 2))  # C*c #high
+                      injury_severity = c(round(rnorm(n = 47, mean = 3, sd = 1.5)), # A*a
+                                          round(rnorm(n = 47, mean = 4, sd = 1.2)), # A*b
+                                          round(rnorm(n = 47, mean = 8, sd = 2.0)), # A*c #high
+                                          round(rnorm(n = 47, mean = 4, sd = 1.0)), # B*a
+                                          round(rnorm(n = 47, mean = 3, sd = 1.8)), # B*b
+                                          round(rnorm(n = 47, mean = 8, sd = 1.0)), # B*c #high
+                                          round(rnorm(n = 47, mean = 3, sd = 1.3)), # C*a
+                                          round(rnorm(n = 47, mean = 5, sd = 2.0)), # C*b
+                                          round(rnorm(n = 47, mean = 8, sd = 1.1))  # C*c #high
                       )
 ) %>%
   mutate(age = case_when(age < 18 ~ 23,
@@ -45,7 +45,7 @@ df_2way_3x3 <- tibble(ID = 1:423,
   )
 # encode IV1 as a factor
 df_2way_3x3$division <- factor(df_2way_3x3$division,
-                               levels = c("science/medical", "command", "operations"))
+                               levels = c("science_medical", "command", "operations"))
 # encode IV2 as a factor
 df_2way_3x3$uniform_colour <- factor(df_2way_3x3$uniform_colour,
                                      levels = c("blue", "yellow", "red"))
