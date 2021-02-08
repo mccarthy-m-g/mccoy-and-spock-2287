@@ -17,6 +17,10 @@ csl: "apa.csl"
 output:
   distill::distill_article:
     theme: theme.css
+repository_url: https://github.com/mccarthy-m-g/mccoy-and-spock-2287
+preview: https://upload.wikimedia.org/wikipedia/en/4/4c/Redshirt_characters_from_Star_Trek.jpg
+twitter:
+  creator: "@mccarthymg"
 ---
 
 ```{r setup, include=FALSE}
@@ -34,6 +38,11 @@ library(english) # Translate Integers into English
 library(car)
 library(moments)
 library(kableExtra)
+library(emmeans)
+library(patchwork)
+library(magick)
+library(trekcolors)
+library(papaja)
 
 # Load R scripts located in R/ ------------------------------------------------
 source(here("R", "printing.R"))
@@ -93,7 +102,7 @@ knitr::include_graphics(here("Figures", "redshirt-lineup.jpeg"))
 
 ## Design
 
-We used a 3x3 independent design to test our hypotheses, with division (science/medical, command, operations) and uniform colour (blue, yellow, red) as independent variables. The Starfleet designations for divisions and their uniform colours can be seen in Figure\ \@ref(fig:starfleet-divisions). Severity of injury---our dependent variable---was measured on a 10-point scale developed by @phlox2153, where one represented the lowest severity and ten the highest. Examples of lower severity injuries include broken bones, cellular damage, or curable infections obtained during copulation with an alien species. Higher severity injuries include decapitation by Bat'leth, exposure to delta-particle radiation, or being crushed by Tribbles.
+We used a 3x3 independent design to test our hypotheses, with division (science/medical, command, operations) and uniform colour (blue, yellow, red) as independent variables. The Starfleet designations for divisions and their uniform colours can be seen in Figure\ \@ref(fig:starfleet-divisions). Severity of injury---our dependent variable---was measured on a 10-point scale developed by @phlox2153, where one represented the lowest severity and ten the highest. Examples of lower severity injuries include broken bones, cellular damage, or curable infections obtained during copulation with an alien species. Higher severity injuries include decapitation by Bat'leth, exposure to delta-particle radiation, or being crushed by Tribbles.^[A Klingon's worst nightmare.]
 
 <aside>
 <!-- ------------------------------------------------------------------------------------------ -->
@@ -123,8 +132,10 @@ assumption_normality <-
                  group_by = c(division, uniform_colour)) %>%
   # Prepare table for printing
   mutate(cell = str_to_title(str_replace_all(cell, "_", " "))) %>%
+  rowwise() %>%
   mutate(across(skewness:statistic, print_num)) %>%
   mutate(p.value = print_p(p.value, in_table = TRUE)) %>%
+  ungroup() %>%
   rename("**Cell**" = cell,
          "**Skewness**" = skewness,
          "**Kurtosis**" = kurtosis,
@@ -145,7 +156,7 @@ assumption_variance <-
   mutate(print = glue("$F({df}, {df.residual}) = {statistic}$, $p {p.value}$"))
 ```
 
-Our data met two of the assumptions for an independent two-way ANOVA. Specifically, injury severity was measured on an interval scale, and all observations for injury severity were independent. Two assumptions were not met. Shapiro-Wilk’s test of normality showed that the distribution of injury severity within each of the experiment cells was significantly different from a normal distribution (see Table\ \@ref(tab:normality-table)); and Levene’s test showed that the variances for injury severity between each of the experiment cells were not equal, `r assumption_variance$print`. However, as discussed in @mudd2266, meeting these assumptions is unnecessary for our analyses due to statistical advances in the late 21st century. Because of this, we continued with our analysis as planned.
+Our data met two of the assumptions for an independent two-way ANOVA. Specifically, injury severity was measured on an interval scale, all observations for injury severity were independent, and Levene’s test showed that the variances for injury severity between each of the experiment cells were equal, `r assumption_variance$print`. One assumption was not met. Shapiro-Wilk’s test of normality showed that the distribution of injury severity within most of the experiment cells was significantly different from a normal distribution (see Table\ \@ref(tab:normality-table)); however, as discussed in @mudd2266, meeting this assumption is unnecessary for our analyses due to statistical advances in the late 21st century. Because of this, we continued with our analysis as planned.
 
 ```{r normality-table, layout="l-body-outset"}
 # Print table with caption in manuscript
@@ -161,10 +172,15 @@ kbl(assumption_normality,
 ## Two-way ANOVA results
 
 ```{r descriptive-statistics}
-# Get descriptive statistics for printing
-descriptives <- get_descriptives(redshirts,
-                                 dv = injury_severity,
-                                 group_by = c(division, uniform_colour))
+# Get descriptive statistics and prep for printing
+descriptives <- redshirts %>%
+  get_descriptives(dv = injury_severity, group_by = uniform_colour) %>%
+  rowwise() %>%
+  mutate(print = glue("$\\mathit{{M}} = {print_num(mean)}$, ",
+                      "$\\mathit{{SD}} = {print_num(std_dev)}$")
+         ) %>%
+  ungroup() %>%
+  split(.$uniform_colour)
 ```
 
 ```{r two-way-anova}
@@ -185,15 +201,97 @@ model_list <- model_summary %>%
   mutate(term = str_replace(term, ":", "_x_")) %>%
   mutate(df.residual = pull(filter(model_summary, term == "Residuals"), df),
          .after = df) %>%
+  rowwise() %>%
   mutate(across(sumsq:statistic, print_num)) %>%
   mutate(across(c(p.value, omegasq.partial), print_p)) %>%
   mutate(print = glue("$F({df}, {df.residual}) = {statistic}$, ",
                       "$p {p.value}$, ",
                       "$\\omega^2_p {omegasq.partial}$")) %>%
+  ungroup() %>%
   split(.$term)
 ```
 
-WORK ON THIS NOW `r model_list$division$print`
+```{r post-hoc}
+# Follow up simple main effect of uniform colour ------------------------------
+marginal <- emmeans(model, "uniform_colour")
+
+marginal_contrast <- marginal %>%
+  contrast(method = "pairwise") %>%
+  tidy()
+
+marginal_effsize <- marginal %>%
+  eff_size(sigma = sigma(model), edf = df.residual(model)) %>%
+  tidy() %>%
+  rename(eff.size = estimate) %>%
+  select(contrast, eff.size)
+
+# Prepare contrasts for printing ----------------------------------------------
+marginal_list <- marginal_contrast %>%
+  left_join(marginal_effsize, by = "contrast") %>% 
+  mutate(contrast = str_replace(contrast, "[[:space:]]-[[:space:]]", "_x_")) %>%
+  # rowwise mutation is necessary when using `abs()`
+  rowwise() %>%
+  mutate(statistic = print_num(statistic, abs = TRUE)) %>%
+  mutate(eff.size = abs(eff.size)) %>%
+  ungroup() %>%
+  # end of rowwise computation
+  mutate(across(c(adj.p.value, eff.size), print_p)) %>%
+  mutate(print = glue("$t({df}) = {statistic}$, ",
+                      "$p_{{\\mathit{{adj}}}} {adj.p.value}$, ",
+                      "$d {eff.size}$")) %>%
+  split(.$contrast)
+```
+
+There was no significant main effect of division, `r model_list$division$print`, nor was there a significant interaction effect, `r model_list$division_x_uniform_colour$print`. In support of my hypothesis (and in contempt of Spock's), there was a significant main effect of uniform colour on severity of injury, `r model_list$uniform_colour$print`. This indicates different uniform colours affected the severity of injuries Starfleet officers suffered. Specifically, post-hoc pairwise comparisons corrected using the Tukey method found that officers wearing red uniforms (`r descriptives$red$print`) suffered significantly worse injuries than officers wearing blue uniforms (`r descriptives$blue$print`), `r marginal_list$blue_x_red$print`, or yellow uniforms (`r descriptives$yellow$print`), `r marginal_list$red_x_yellow$print`. However, officers wearing blue and yellow uniforms had no difference in the severity of their injuries, `r marginal_list$blue_x_yellow$print`. Thus, my hypothesis was confirmed. These differences can be seen in Figure\ \@ref(fig:model-plot).
+
+<!-- ------------------------------------------------------------------------------------------ -->
+(ref:model-plot) Two science officers dawning a red Starfleet uniform (A). The result of said uniform on their lifespans (B).
+
+```{r model-plot, fig.cap="(ref:model-plot)", layout="l-body-outset"}
+# create bar plot
+plot_bar <- ggplot(redshirts,
+                   aes(x = division,
+                       y = injury_severity,
+                       fill = fct_relevel(uniform_colour, "red", "yellow")))+
+  stat_summary(fun = mean, geom = "bar", position = "dodge", colour = "Black") +
+  stat_summary(fun.data = "mean_cl_normal", geom = "errorbar",
+               position = position_dodge(width = 0.90), width = 0.2) +
+  scale_y_continuous(limits = c(0, 10)) +
+  scale_fill_trek() + 
+  labs(title = "",
+       subtitle = "",
+       x = "IV1", y = "DV", fill = "IV2") +
+  theme_apa()
+
+# print bar plot
+plot_bar
+```
 
 # Discussion
+
+<!-- ------------------------------------------------------------------------------------------ -->
+(ref:redshirt-behaviour) Two science officers dawning a red Starfleet uniform (A). The result of said uniform on their lifespans (B).
+
+```{r redshirts-plot-prep, include=FALSE}
+redshirt_behaviour_1 <-
+  magick::image_read(here("Figures", "redshirt-behaviour-1.jpg")) %>%
+  magick::image_ggplot()
+
+redshirt_behaviour_2 <-
+  magick::image_read(here("Figures", "redshirt-behaviour-2.jpg")) %>%
+  magick::image_ggplot()
+
+redshirt_plot <-
+  (redshirt_behaviour_1 + theme(plot.margin = unit(c(0,15,0,0), "pt"))) +
+  (redshirt_behaviour_2 + theme(plot.margin = unit(c(0,0,0,15), "pt"))) +
+  plot_annotation(tag_levels = "A")
+  
+
+ggsave(here("Figures", "redshirts-plot.png"))
+knitr::plot_crop(here("Figures", "redshirts-plot.png"))
+```
+
+```{r redshirt-behaviour, fig.cap="(ref:redshirt-behaviour)"}
+knitr::include_graphics(here("Figures", "redshirts-plot.png"))
+```
 
