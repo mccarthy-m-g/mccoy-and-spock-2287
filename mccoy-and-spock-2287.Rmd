@@ -2,6 +2,9 @@
 title: "Wearing a red Starfleet uniform is bad for your health"
 description: |
   A new article created using the Distill format.
+
+date: "02-13-2287"
+
 author:
   - name: Leonard H. McCoy 
     url: https://memory-alpha.fandom.com/wiki/Leonard_McCoy
@@ -11,19 +14,31 @@ author:
     url: https://memory-alpha.fandom.com/wiki/Spock
     affiliation: Starfleet
     affiliation_url: https://memory-alpha.fandom.com/wiki/Starfleet
-date: "02-13-2287"
-bibliography: references.bib
-csl: "apa.csl"
-output:
-  distill::distill_article:
-    theme: theme.css
+
+journal: 
+  title: "Starfleet Journal of Medicine"
+volume: 42
+issue: 4
 repository_url: https://github.com/mccarthy-m-g/mccoy-and-spock-2287
+
 preview: https://upload.wikimedia.org/wikipedia/en/4/4c/Redshirt_characters_from_Star_Trek.jpg
 twitter:
   creator: "@mccarthymg"
+
+bibliography: references.bib
+csl: "apa.csl"
+
+output:
+  distill::distill_article:
+    theme: theme.css
 ---
 
 ```{r setup, include=FALSE}
+# This chunk demonstrates common methods that are used when setting up a
+# reproducible manuscript in R Markdown. In almost all cases this should be the
+# first code chunk in your document since, as its name implies, it sets
+# everything up for the rest of the code you will be writing and running.
+
 # Ensure the project root is set up correctly using {here} --------------------
 here::i_am("mccoy-and-spock-2287.Rmd")
 
@@ -32,17 +47,17 @@ here::i_am("mccoy-and-spock-2287.Rmd")
 # here: https://github.com/luisDVA/annotater
 library(here) # A Simpler Way to Find Your Files
 library(tidyverse) # Easily Install and Load the 'Tidyverse'
-library(broom)
+library(broom) # Convert Statistical Objects into Tidy Tibbles
 library(glue) # Interpreted String Literals
 library(english) # Translate Integers into English
-library(car)
-library(moments)
-library(kableExtra)
-library(emmeans)
-library(patchwork)
-library(magick)
-library(trekcolors)
-library(papaja)
+library(car) # Companion to Applied Regression
+library(moments) # Moments, cumulants, skewness, kurtosis and related tests
+library(kableExtra) # Construct Complex Table with 'kable' and Pipe Syntax
+library(emmeans) # Estimated Marginal Means, aka Least-Squares Means
+library(patchwork) # The Composer of Plots
+library(magick) # Advanced Graphics and Image-Processing in R
+library(trekcolors) # Star Trek Colour Palettes
+library(papaja) # Prepare reproducible APA journal articles with R Markdown
 
 # Load R scripts located in R/ ------------------------------------------------
 source(here("R", "printing.R"))
@@ -66,13 +81,81 @@ The aim of our study is simple: We will test whether the uniform colour of Starf
 # Methodology
 
 ```{r study-1-data}
-# Load study data for analysis
+# This chunk demonstrates how to load a .csv file and save it as an object
+# in your global environment so it can be used by other functions. For this
+# manuscript I have simulated my data and saved it to a .csv file (see
+# "R/data-simulation.R") to be loaded here. Because the data is simulated it
+# is also already clean.
+#
+# If you were using real data it is likely you would need to clean it before
+# running your analyses and printing their outputs in your manuscript. In such
+# cases I would recommend creating a "R/data-cleaning.R" script that does all
+# your data cleaning then saves the cleaned data to a new .csv file (e.g., 
+# "Data/cleaned-redshirts.csv"). Then you can use the code below to read your
+# cleaned data in your global environment here.
+
+# If you use this approach and want the data cleaning script to be
+# automatically run (instead of instructing people to run it manually before
+# running the code chunks in this manuscript), you can simple `source()` your
+# "R/data-cleaning.R" script in your setup chunk. If you want to clean your
+# global environment up after sourcing this Stack Overflow question provides
+# a useful script in the accepted answer:
+# https://stackoverflow.com/questions/28196493/cleaning-up-the-global-environment-after-sourcing-how-to-remove-objects-of-a-ce
+
+# Load study data for analysis ------------------------------------------------
 redshirts <- read_csv(here("Data", "redshirts.csv"))
 ```
 
 ## Participants
 
 ```{r participants}
+# This chunk demonstrates a few important concepts that make soft-coding values
+# and formatting them for printing in the body of the manuscript using inline
+# R code very easy to do. These concepts are applied throughout this document,
+# which you will see as you explore further.
+#
+# The first concept of note is the use of {dplyr} and pipes `%>%` to transform
+# our redshirts data into a table of summary statistics grouped by a variable
+# or variables of interest. In this case we create a summary table with counts,
+# age means, and age standard deviations for each level of gender in the gender
+# column of our redshirts data. If you are new to {dplyr} and `%>%`, R Studio
+# has a helpful cheat sheet that can be found here:
+# https://rstudio.com/resources/cheatsheets/
+#
+# The second concept is the use of {glue} to create interpreted string literals
+# in cells of the `age_mean` and `age_sd` columns of the summary table. An
+# interpreted string literal is simply a character string " " wherein any R
+# expressions wrapped in single curly braces { } will be evaluated and their
+# output inserted into the resulting string. In this case, for the `age_mean`
+# call `glue("$\\mathit{{M_{{age}}}} = {print_num(mean(age))}$")`, the R
+# expression being evaluated is: {print_num(mean(age))}. This expression
+# calculates the mean age for each level of gender `mean(age)` then formats
+# the resulting mean by rounding it to two decimal places with trailing zeros
+# `print_num()`.
+#
+# The glue() call also contains two instances of double curly braces {{ }};
+# these are interpreted as string literal single curly braces by glue() "{ }" so
+# they are not evaluated as R expressions. This introduces us to our third
+# concept, using LaTeX mathematics $ $ inside of glue() to create high-quality
+# mathematical typography and expressions. The only change from writing regular
+# LaTeX mathematics is that inside glue() backslashes \ and curly braces { }
+# need to be doubled \\ {{ }}. So `$X^{-10}$` would be written as `$X^{{-10}$`
+# and `$\mathit{hello}$` would be written as `$\\mathit{{hello}}$` inside
+# glue(). If you are new to LaTeX mathematics a helpful introduction can be
+# found here:
+# https://michaelmccarthy.netlify.app/post/writing-statistical-formulas-in-r-markdown-documents/
+# 
+# The final concept is the use of split() to split the summary table into a
+# named list of single row summary tables separated by a grouping variable.
+# This allows you to extract elements by name both from the named list and from
+# the columns of the summary table at each level of the named list using the
+# `$` operator on the assigned object <- created by the transformation
+# pipeline. These extractions can then be used in inline R code to print 
+# soft-coded values in the body of the manuscript. In this case the summary
+# table is split into a list by gender `split(.$gender)`, then values in the
+# list are accessed in inline R code in the body text below this code chunk
+# using, e.g., `r demographics$man$age_mean`.
+
 # Get participant demographics for printing -----------------------------------
 demographics <- redshirts %>%
   group_by(gender) %>%
@@ -80,7 +163,7 @@ demographics <- redshirts %>%
             age_mean = glue("$\\mathit{{M_{{age}}}} = {print_num(mean(age))}$"),
             age_sd = glue("$\\mathit{{SD_{{age}}}} = {print_num(sd(age))}$")
             ) %>%
-  pivot_wider(names_from = gender, values_from = n:age_sd)
+  split(.$gender)
 
 # Get the number of excluded participants for printing ------------------------
 # I'm just using this code to demonstrate printing numbers in the body as
@@ -89,13 +172,35 @@ demographics <- redshirts %>%
 exclusions <- str_to_title(english(6)) # for lowercase wrap in as.character()
 ```
 
-`r nrow(redshirts)` Starfleet officers on board the starship Enterprise participated in our study, `r demographics$n_man` of which identified as men (`r demographics$age_mean_man`, `r demographics$age_sd_man`) and `r demographics$n_woman` as women (`r demographics$age_mean_woman`, `r demographics$age_sd_woman`). Myself, First Officer Spock, and Captain Kirk did not participate in the study. `r exclusions` redshirts who were supposed to participate were excluded from the study. A can be seen in Figure\ \@ref(fig:rip-redshirts), Captain Kirk foolishly sent them on an away mission; we have lost all contact since.
+`r nrow(redshirts)` Starfleet officers on board the starship Enterprise participated in our study, `r demographics$man$n` of which identified as men (`r demographics$man$age_mean`, `r demographics$man$age_sd`) and `r demographics$woman$n` as women (`r demographics$woman$age_mean`, `r demographics$woman$age_sd`). Myself, First Officer Spock, and Captain Kirk did not participate in the study. `r exclusions` redshirts who were supposed to participate were excluded from the study. A can be seen in Figure\ \@ref(fig:rip-redshirts), Captain Kirk foolishly sent them on an away mission; we have lost all contact since.
 
 <aside>
 <!-- ------------------------------------------------------------------------------------------ -->
 (ref:rip-redshirts) Captain Kirk sending a team of redshirts on an away mission to the Klingon supermarkets on Qo'noS.
 
 ```{r rip-redshirts, fig.cap="(ref:rip-redshirts)"}
+# This chunk demonstrates how to include figures in the manuscript (in this
+# case an image, but plots work this way too), along with a numbered figure
+# caption. There are three important components to make the figure caption
+# work.
+#
+# First, a `fig.cap` chunk option is added to the chunk that states the
+# reference identifier to be used for the figure. In this case
+# "(ref:rip-redshirts)".
+#
+# Second, the reference identifier is placed above the code chunk in the body
+# along with the figure caption. I also like to put a comment line <!-- -->
+# above this to make it easier to see where the caption is, but the comment
+# line does not actually do anything. You might also notice the <aside> above
+# the comment line and </aside> below this code chunk; these are tags that will
+# include anything between them in the gutter of the knitted manuscript. This
+# is a feature of the {distill} output format and is an aside to the figure
+# inclusion demonstrated in this code chunk.
+#
+# Third, a reference to the figure is placed in the body text using the format
+# Figure\ \@ref(fig:tag). In this case Figure\ \@ref(fig:rip-redshirts).
+
+# Include image in output -----------------------------------------------------
 knitr::include_graphics(here("Figures", "redshirt-lineup.jpeg"))
 ```
 </aside>
@@ -109,6 +214,7 @@ We used a 3x3 independent design to test our hypotheses, with division (science/
 (ref:starfleet-divisions) Depiction of Starfleet divisions and their respective uniform colours.
 
 ```{r starfleet-divisions, fig.cap="(ref:starfleet-divisions)"}
+# Include image in output -----------------------------------------------------
 knitr::include_graphics(here("Figures", "starfleet-divisions.jpg"))
 ```
 </aside>
@@ -121,7 +227,16 @@ Our procedure was simple, although imperfect as First Officer Spock wants us to 
 
 ## Two-way ANOVA assumptions
 
-```{r assumptions}
+```{r assumption-normality}
+# This chunk utilizes the same concepts as the `participants` chunk did but for
+# a normality test instead of means and standard deviations. It also
+# demonstrates how to format both the cells and headers of a table to prepare
+# for printing. Cells are formatted using the `mutate()` function from {dplyr},
+# and headers are formatted using the `rename()` function from {dplyr}. In this
+# case I chose to use Markdown syntax to **bold** or ***italicize and bold***
+# the table headers, but you can also use LaTeX mathematics to include Greek
+# letters such as "$\omega$".
+
 # Get skewness, kurtosis and Shapiro-Wilk (normality) -------------------------
 # - Skewness should be in the range of +/- 2
 # - Kurtosis should be in the range of +/- 7
@@ -142,6 +257,18 @@ assumption_normality <-
          "***W***" = statistic,
          "***df***" = df,
          "***p***" = p.value)
+```
+
+```{r assumption-variance}
+# This chunk utilizes many of the same concepts as the `participants` and 
+# `assumption-normality` chunks have, however, it introduces one new important
+# function: `tidy()` from {broom}. `tidy()` summarizes information about the
+# components of a model in a data frame, allowing us to transform the results
+# of a statistical test in the same way we have done with other summary tables.
+# Please note that not every statistical test in R has a `tidy()` method (most
+# do though); however, in cases like this you can create your own function to
+# tidy the model. If you ever need to do this a guide can be found here:
+# https://www.tidymodels.org/learn/develop/broom/
 
 # Run Levene's test on DV (homogeneity of variance) ---------------------------
 # - Significance indicates the assumption is violated
@@ -159,7 +286,18 @@ assumption_variance <-
 Our data met two of the assumptions for an independent two-way ANOVA. Specifically, injury severity was measured on an interval scale, all observations for injury severity were independent, and Levene’s test showed that the variances for injury severity between each of the experiment cells were equal, `r assumption_variance$print`. One assumption was not met. Shapiro-Wilk’s test of normality showed that the distribution of injury severity within most of the experiment cells was significantly different from a normal distribution (see Table\ \@ref(tab:normality-table)); however, as discussed in @mudd2266, meeting this assumption is unnecessary for our analyses due to statistical advances in the late 21st century. Because of this, we continued with our analysis as planned.
 
 ```{r normality-table, layout="l-body-outset"}
-# Print table with caption in manuscript
+# This chunk demonstrates how to include tables in the manuscript along with
+# a numbered table caption. This works slightly differently from figures.
+# There are three important differences to note.
+#
+# First, a `fig.cap` is not used. Instead the caption is included within the
+# table object. Because of this, there is not a reference identifier to place
+# in the body above the chunk for the caption either.
+#
+# Second, a reference to the table is placed in the body text using the format
+# Table\ \@ref(tab:tag). In this case Table\ \@ref(tab:normality-table).
+
+# Print table with caption in manuscript --------------------------------------
 caption <- "Table Showing Assumption of Normality Tests."
 kbl(assumption_normality,
           caption = caption,
@@ -172,7 +310,17 @@ kbl(assumption_normality,
 ## Two-way ANOVA results
 
 ```{r descriptive-statistics}
-# Get descriptive statistics and prep for printing
+# This chunk utilizes the same concepts as the `participants` chunk did,
+# however, it extends them by taking the summary table output from
+# `get_descriptives()` and adding a new print column to it with ready-to-print
+# strings of means and standard deviations for injury severity in each of the
+# uniform colour groups. We could have done this in the `participants` chunk as
+# well instead of creating separate formatted strings for the means and for the
+# standard deviations.
+#
+# The source code for `get_descriptives()` can be found in "R/descriptives.R".
+
+# Get descriptive statistics and prep for printing ----------------------------
 descriptives <- redshirts %>%
   get_descriptives(dv = injury_severity, group_by = uniform_colour) %>%
   rowwise() %>%
@@ -184,6 +332,16 @@ descriptives <- redshirts %>%
 ```
 
 ```{r two-way-anova}
+# This chunk just reapplies concepts already used in previous code chunks.
+# The only notable point to make here is the use of 
+# `mutate(term = str_replace(term, ":", "_x_"))` to replace the colon in the
+# string for the interaction term "division:uniform_colour" with "_x_" so the
+# output stays friendly with the $ operator when printing values from the named
+# list for the model. This is because strings containing certain special
+# characters will be surround by backticks when using the $ operator, e.g.,
+# model_list$`division:uniform_colour`$print, which means they cannot be used
+# in inline R code.
+
 # Run the two-way ANOVA with Type II sums of squares to test main effects -----
 model <- aov(injury_severity ~ division*uniform_colour, data = redshirts)
 
@@ -212,6 +370,8 @@ model_list <- model_summary %>%
 ```
 
 ```{r post-hoc}
+# This chunk just reapplies concepts already used in previous code chunks.
+
 # Follow up simple main effect of uniform colour ------------------------------
 marginal <- emmeans(model, "uniform_colour")
 
@@ -248,20 +408,50 @@ There was no significant main effect of division, `r model_list$division$print`,
 (ref:model-plot) Two science officers dawning a red Starfleet uniform (A). The result of said uniform on their lifespans (B).
 
 ```{r model-plot, fig.cap="(ref:model-plot)", layout="l-body-outset"}
-# create bar plot
-plot_bar <- ggplot(redshirts,
-                   aes(x = division,
-                       y = injury_severity,
-                       fill = fct_relevel(uniform_colour, "red", "yellow")))+
-  stat_summary(fun = mean, geom = "bar", position = "dodge", colour = "Black") +
+# This chunk demonstrates how to create a plot using {ggplot}. The `ggplot()`
+# code is fairly boilerplate. If you are new to {ggplot}, R Studio has a
+# helpful cheat sheet that can be found here:
+# https://rstudio.com/resources/cheatsheets/
+#
+# However, there are some concepts in this chunk worth noting. First, factors
+# can be relabelled using `fct_relabel()` from {forcats}; this way factors
+# can be printed in title case and without artifacts that indicate they came
+# from code (such as the underscore in "science_medical"). Second, the order of
+# factors in the plot can be changed using `fct_relevel()` from {forcats}.
+#
+# Third, the plot has been made APA compatible (barring colours) using
+# and `theme_apa()` from {papaja} to control the overall appearance, and 
+# various arguments in `guides()` and `theme()` to control the position and
+# appearance of the legend. Getting the values right for legend appearance can
+# take trial and error, although using `ggsave()` to save the plot then calling
+# it back with `knitr::include_graphics()` can help as it forces you to work
+# with the plot in the final dimensions it will be printed in.
+
+# create bar plot -------------------------------------------------------------
+plot_bar <- redshirts %>%
+  mutate(division = fct_relabel(division,
+                                ~ str_to_title(str_replace(.x, "_", "/")))) %>%
+  mutate(uniform_colour = fct_relabel(fct_relevel(uniform_colour, "red", "yellow"),
+                                      str_to_title)) %>% 
+  ggplot(aes(x = division, y = injury_severity, fill = uniform_colour)) +
+  stat_summary(fun = mean, geom = "bar", position = "dodge") +
   stat_summary(fun.data = "mean_cl_normal", geom = "errorbar",
                position = position_dodge(width = 0.90), width = 0.2) +
   scale_y_continuous(limits = c(0, 10)) +
   scale_fill_trek() + 
-  labs(title = "",
-       subtitle = "",
-       x = "IV1", y = "DV", fill = "IV2") +
-  theme_apa()
+  labs(x = "Division",
+       y = "Average Severity of Injuries",
+       fill = "Uniform Colour") +
+  theme_apa() +
+  guides(fill = guide_legend(title.position = "top",
+                             override.aes = list(size = 2)
+                             )) +
+  theme(legend.direction = "horizontal",
+        legend.background = element_rect(colour ="black"),
+        legend.title = element_text(size = 9), 
+        legend.text = element_text(size = 9),
+        legend.margin = margin(0.5, 1, 0.5, 1, "lines"),
+        legend.position = c(0.79, 0.9))
 
 # print bar plot
 plot_bar
@@ -269,10 +459,20 @@ plot_bar
 
 # Discussion
 
+The results of our experiment confirmed that wearing a red uniform causes Starfleet officers to suffer more severe injuries, regardless of the division they work in. However, our results do not confirm the source of causality. That is, are the uniforms causing Starfleet officers to behave more recklessly, resulting in more severe injuries; or are the uniforms inviting external dangers across the cosmos? As of now we are unsure, but preliminary data suggests the former may be the culprit (see Figure\ \@ref(fig:redshirt-behaviour)).
+
 <!-- ------------------------------------------------------------------------------------------ -->
 (ref:redshirt-behaviour) Two science officers dawning a red Starfleet uniform (A). The result of said uniform on their lifespans (B).
 
 ```{r redshirts-plot-prep, include=FALSE}
+# This chunk demonstrates how to use {patchwork} to combine separate plots
+# into a single figure that includes lettered tag levels for each plot. In
+# this case the “plots” are actually images that are read and converted to
+# ggplot objects using {magick}, but you can do this with any ggplot object
+# (e.g., scatterplots, histograms, etc.). To learn more see the {patchwork}
+# documentation: https://patchwork.data-imaginist.com
+
+# Read images and plot them onto a ggplot for use by {patchwork} --------------
 redshirt_behaviour_1 <-
   magick::image_read(here("Figures", "redshirt-behaviour-1.jpg")) %>%
   magick::image_ggplot()
@@ -281,17 +481,41 @@ redshirt_behaviour_2 <-
   magick::image_read(here("Figures", "redshirt-behaviour-2.jpg")) %>%
   magick::image_ggplot()
 
+# Combine plots into a single figure to prepare for printing ------------------
 redshirt_plot <-
   (redshirt_behaviour_1 + theme(plot.margin = unit(c(0,15,0,0), "pt"))) +
   (redshirt_behaviour_2 + theme(plot.margin = unit(c(0,0,0,15), "pt"))) +
   plot_annotation(tag_levels = "A")
   
-
+# Save the combined plot to a file then crop whitespace to clean up -----------
 ggsave(here("Figures", "redshirts-plot.png"))
 knitr::plot_crop(here("Figures", "redshirts-plot.png"))
 ```
 
 ```{r redshirt-behaviour, fig.cap="(ref:redshirt-behaviour)"}
+# Load then print the combined plot along with its figure caption
 knitr::include_graphics(here("Figures", "redshirts-plot.png"))
 ```
 
+## Limitations
+
+Spock would like to remind our readers that, because their was no random assignment to division, this is not a true experiment. So our results should be taken with caution. Future studies building on the work here should consider randomly assigning participants both a uniform colour *and* division. Training exercises at Starfleet Academy would be an excellent candidate for such an experiment.
+
+# Conclusion
+
+It appears, after careful observation, that wearing a red Starfleet uniform during space exploration is bad for one's health.
+
+
+## Acknowledgments {.appendix}
+
+This is a place to recognize people and institutions. It may also be a good place
+to acknowledge and cite software that makes your work possible.
+
+## Author Contributions {.appendix}
+
+We strongly encourage you to include an author contributions statement briefly 
+describing what each author did.
+
+## Fair Dealing {.appendix}
+
+Any of the trademarks, service marks, collective marks, design rights or similar rights that are mentioned, used, or cited in this manuscript are the property of their respective owners. They are used here as fair dealing for the purpose of education, parody, and satire in accordance with [section 29 of the Copyright Act](https://laws-lois.justice.gc.ca/eng/acts/c-42/page-8.html#h-103270) and do not infringe copyright.
