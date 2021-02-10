@@ -1,7 +1,7 @@
 ---
-title: "Wearing a red Starfleet uniform is bad for your health"
+title: "Wearing a red uniform shortens lifespan in Starfleet officers"
 description: |
-  I'm a doctor, not an undertaker.
+  Damn it, man, I'm a doctor, not an undertaker!
 
 date: "02-13-2287"
 
