@@ -59,12 +59,14 @@ library(glue) # Interpreted String Literals
 library(english) # Translate Integers into English
 library(car) # Companion to Applied Regression
 library(moments) # Moments, cumulants, skewness, kurtosis and related tests
+library(Hmisc) # Harrell Miscellaneous
 library(kableExtra) # Construct Complex Table with 'kable' and Pipe Syntax
 library(emmeans) # Estimated Marginal Means, aka Least-Squares Means
 library(patchwork) # The Composer of Plots
 library(magick) # Advanced Graphics and Image-Processing in R
 library(trekcolors) # Star Trek Colour Palettes
 library(papaja) # Prepare reproducible APA journal articles with R Markdown
+library(boomer) # Print the Output of Intermediate Steps of a Call
 
 # Load R scripts located in R/ ------------------------------------------------
 source(here("R", "printing.R"))
