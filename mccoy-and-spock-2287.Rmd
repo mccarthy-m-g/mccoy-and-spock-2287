@@ -516,7 +516,7 @@ It appears, after careful observation, that wearing a red Starfleet uniform duri
 
 The code and materials for analyzing data and generating the manuscript for this project are available in the project's [GitHub repository](https://github.com/mccarthy-m-g/mccoy-and-spock-2287). This project was written using `r R.version.string` [@rcore2020] in RStudio version `r rstudioapi::versionInfo()$version` [@rstudio2021]. Statistical analyses were done using the `moments` [@moments2015], `car` [@car2019], `stats` [@rcore2020], and `emmeans` [@emmeans2021] R packages, and were assisted with the following packages and dependencies:
 
-```{r packages-used, eval=FALSE}
+```{r packages-used, include=FALSE}
 # read renv.lock
 renvLock <- jsonlite::read_json(here("renv.lock"))
 
