@@ -39,6 +39,13 @@ output:
 # first code chunk in your document since, as its name implies, it sets
 # everything up for the rest of the code you will be writing and running.
 
+#-----------------------------------------------------------------------------#
+# NOTE TO USERS: If you have cloned this project from GitHub please install   #
+# the {renv} R package `install.packages("remotes")` then run the following   #
+# command `renv::restore()` in your console to restore the state of this      #
+# project's libraries on your local machine.                                  #
+#-----------------------------------------------------------------------------#
+
 # Ensure the project root is set up correctly using {here} --------------------
 here::i_am("mccoy-and-spock-2287.Rmd")
 
@@ -503,18 +510,41 @@ Spock would like to remind our readers that, because their was no random assignm
 
 # Conclusion
 
-It appears, after careful observation, that wearing a red Starfleet uniform during space exploration is bad for one's health.
+It appears, after careful observation, that wearing a red Starfleet uniform during space exploration is bad for one's health, often leading to an untimely demise. As a doctor who does not wish to become an undertaker, it is my recommendation that Starfleet investigate the cause(s) underlying red uniform's effects on officer behaviour. To boldly go where no one has gone before.
 
+## Open Science {.appendix}
 
-## Acknowledgments {.appendix}
+The code and materials for analyzing data and generating the manuscript for this project are available in the project's [GitHub repository](https://github.com/mccarthy-m-g/mccoy-and-spock-2287). This project was written using `r R.version.string` [@rcore2020] in RStudio version `r rstudioapi::versionInfo()$version` [@rstudio2021]. Statistical analyses were done using the `moments` [@moments2015], `car` [@car2019], `stats` [@rcore2020], and `emmeans` [@emmeans2021] R packages, and were assisted with the following packages and dependencies:
 
-This is a place to recognize people and institutions. It may also be a good place
-to acknowledge and cite software that makes your work possible.
+```{r packages-used, eval=FALSE}
+# read renv.lock
+renvLock <- jsonlite::read_json(here("renv.lock"))
+
+# write R packages from renv.lock to r-packages.bib
+knitr::write_bib(names(renvLock$Packages), "r-packages.bib")
+
+# get location of package versions and sources
+pkg_version <- paste0("renvLock$Packages$", names(renvLock$Packages), "$Version")
+pkg_source <- paste0("renvLock$Packages$", names(renvLock$Packages), "$Repository")
+
+# create tibble of packages, their versions, and their source
+pkg_df <- tibble::tibble(
+  package = names(renvLock$Packages),
+  version = sapply(pkg_version, function(x) eval(parse(text = x))),
+  source = sapply(pkg_source, function(x) eval(parse(text = x)))
+)
+# print table
+pkg_df %>%
+  kbl(caption = "All packages used in this paper.") %>%
+  kable_styling() %>%
+  scroll_box(height = "250px")
+```
+
+To easily inspect the intermediate output of data analysis code pipes from this paper, we suggest using the `boomer` [@boomer2021] R package.
 
 ## Author Contributions {.appendix}
 
-We strongly encourage you to include an author contributions statement briefly 
-describing what each author did.
+McCoy came up with the idea for this experiment and conducted all data collection and analysis. McCoy and Spock wrote this paper, however, Spock's main contribution was merely questioning McCoy's logic.
 
 ## Fair Dealing {.appendix}
 
