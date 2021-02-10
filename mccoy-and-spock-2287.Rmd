@@ -515,7 +515,7 @@ It appears, after careful observation, that wearing a red Starfleet uniform duri
 
 ## Open Science {.appendix}
 
-The code and materials for analyzing data and generating the manuscript for this project are available in the project's [GitHub repository](https://github.com/mccarthy-m-g/mccoy-and-spock-2287). This project was written using `r R.version.string` [@rcore2020] in RStudio version `r rstudioapi::versionInfo()$version` [@rstudio2021]. Statistical analyses were done using the `moments` [@moments2015], `car` [@car2019], `stats` [@rcore2020], and `emmeans` [@emmeans2021] R packages. To easily inspect the intermediate output of data analysis code pipes from this manuscript, we suggest using the `boomer` [@boomer2021] R package. All packages and dependencies used in this project can be seen in Table\ \@ref(tab:packages-used): 
+The code and materials for analyzing data and generating the manuscript for this project are available in the project's [GitHub repository](https://github.com/mccarthy-m-g/mccoy-and-spock-2287). This project was written using `r R.version.string` [@rcore2020] in RStudio version 1.4.1103 [@rstudio2021]. Statistical analyses were done using the `moments` [@moments2015], `car` [@car2019], `stats` [@rcore2020], and `emmeans` [@emmeans2021] R packages. To easily inspect the intermediate output of data analysis code pipes from this manuscript, we suggest using the `boomer` [@boomer2021] R package. All packages and dependencies used in this project can be seen in Table\ \@ref(tab:packages-used): 
 
 ```{r packages-used, warning=FALSE, error=FALSE, message=FALSE}
 # read renv.lock
