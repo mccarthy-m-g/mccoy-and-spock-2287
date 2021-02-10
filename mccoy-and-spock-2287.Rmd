@@ -1,7 +1,7 @@
 ---
 title: "Wearing a red Starfleet uniform is bad for your health"
 description: |
-  A new article created using the Distill format.
+  I'm a doctor, not an undertaker.
 
 date: "02-13-2287"
 
@@ -305,11 +305,10 @@ Our data met two of the assumptions for an independent two-way ANOVA. Specifical
 # Table\ \@ref(tab:tag). In this case Table\ \@ref(tab:normality-table).
 
 # Print table with caption in manuscript --------------------------------------
-caption <- "Table Showing Assumption of Normality Tests."
-kbl(assumption_normality,
-          caption = caption,
-          escape = FALSE,
-          align = c("l", rep("r", 5))) %>%
+assumption_normality %>%
+  kbl(caption = "Table Showing Assumption of Normality Tests.",
+      escape = FALSE,
+      align = c("l", rep("r", 5))) %>%
   kable_minimal(lightable_options = "hover",
                 html_font = "Amiri, serif")
 ```
@@ -514,9 +513,9 @@ It appears, after careful observation, that wearing a red Starfleet uniform duri
 
 ## Open Science {.appendix}
 
-The code and materials for analyzing data and generating the manuscript for this project are available in the project's [GitHub repository](https://github.com/mccarthy-m-g/mccoy-and-spock-2287). This project was written using `r R.version.string` [@rcore2020] in RStudio version `r rstudioapi::versionInfo()$version` [@rstudio2021]. Statistical analyses were done using the `moments` [@moments2015], `car` [@car2019], `stats` [@rcore2020], and `emmeans` [@emmeans2021] R packages, and were assisted with the following packages and dependencies:
+The code and materials for analyzing data and generating the manuscript for this project are available in the project's [GitHub repository](https://github.com/mccarthy-m-g/mccoy-and-spock-2287). This project was written using `r R.version.string` [@rcore2020] in RStudio version `r rstudioapi::versionInfo()$version` [@rstudio2021]. Statistical analyses were done using the `moments` [@moments2015], `car` [@car2019], `stats` [@rcore2020], and `emmeans` [@emmeans2021] R packages. To easily inspect the intermediate output of data analysis code pipes from this manuscript, we suggest using the `boomer` [@boomer2021] R package. All packages and dependencies used in this project can be seen in Table\ \@ref(tab:packages-used): 
 
-```{r packages-used, include=FALSE}
+```{r packages-used, warning=FALSE, error=FALSE, message=FALSE}
 # read renv.lock
 renvLock <- jsonlite::read_json(here("renv.lock"))
 
@@ -529,18 +528,18 @@ pkg_source <- paste0("renvLock$Packages$", names(renvLock$Packages), "$Repositor
 
 # create tibble of packages, their versions, and their source
 pkg_df <- tibble::tibble(
-  package = names(renvLock$Packages),
-  version = sapply(pkg_version, function(x) eval(parse(text = x))),
-  source = sapply(pkg_source, function(x) eval(parse(text = x)))
+  Package = names(renvLock$Packages),
+  Version = sapply(pkg_version, function(x) eval(parse(text = x))),
+  Source = sapply(pkg_source, function(x) eval(parse(text = x)))
 )
 # print table
 pkg_df %>%
-  kbl(caption = "All packages used in this paper.") %>%
-  kable_styling() %>%
+  kbl(caption = "All Packages and Dependencies for this Project (Scrollable).",
+      align = c("l", "r", "r")) %>%
+  kable_minimal(lightable_options = "hover",
+                html_font = "Amiri, serif") %>%
   scroll_box(height = "250px")
 ```
-
-To easily inspect the intermediate output of data analysis code pipes from this paper, we suggest using the `boomer` [@boomer2021] R package.
 
 ## Author Contributions {.appendix}
 
