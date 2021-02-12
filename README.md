@@ -1,6 +1,6 @@
 # Wearing a red uniform shortens lifespan in Starfleet officers
 
-![Render Rmarkdown files](https://github.com/mccarthy-m-g/mccoy-and-spock-2287/workflows/Render%20Rmarkdown%20files/badge.svg)
+![Render Rmarkdown files](https://github.com/mccarthy-m-g/mccoy-and-spock-2287/workflows/Render%20Rmarkdown%20files/badge.svg?branch=main)
 
 ![Synced with](https://img.shields.io/badge/Synced%20with-OSF-blue.svg?link_&link_=https://osf.io/9rshp/)
 
