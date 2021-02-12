@@ -4,6 +4,7 @@ here::i_am("R/data-simulation.R")
 # load packages
 library(here)
 library(dplyr)
+library(readr)
 
 # create dataset --------------------------------------------------------------
 set.seed(5327)
@@ -52,3 +53,21 @@ df_2way_3x3$uniform_colour <- factor(df_2way_3x3$uniform_colour,
 
 # save dataset to a .csv file -------------------------------------------------
 write_csv(df_2way_3x3, here("Data", "redshirts.csv"))
+
+# Create function for simulating t-test data ----------------------------------
+simulate_data <- function(n, mean_red = 7, mean_blue = 4, sd_red = 1.5, sd_blue = 1.2) {
+  # create dataset
+  df_ind_t.test <- tibble::tibble(ID = 1:n,
+                                  uniform_colour = c(rep("red", n/2),
+                                         rep("blue", n/2)
+                                  ),
+                                  injury_severity = c(rnorm(n = n/2, mean = mean_red, sd = sd_red), # A
+                                         rnorm(n = n/2, mean = mean_blue, sd = sd_blue)  # B
+                                  )
+  )
+  # encode IV as a factor
+  df_ind_t.test$uniform_colour <- factor(df_ind_t.test$uniform_colour,
+                                         levels = c("red", "blue"))
+  # return df
+  df_ind_t.test
+}

@@ -1,0 +1,126 @@
+---
+title: "Wearing a red uniform shortens lifespan in Starfleet officers (pilot study)"
+
+date: "02-13-2287"
+
+author:
+  - name: Leonard H. McCoy 
+    url: https://memory-alpha.fandom.com/wiki/Leonard_McCoy
+    affiliation: Starfleet
+    affiliation_url: https://memory-alpha.fandom.com/wiki/Starfleet
+    
+bibliography: references.bib
+csl: "apa.csl"
+
+output:
+  distill::distill_article:
+    theme: theme.css
+---
+
+```{r setup, include=FALSE}
+# Ensure the project root is set up correctly using {here} --------------------
+here::i_am("mccoy-and-spock-2287-pilot.Rmd")
+
+# Load packages used in this manuscript ---------------------------------------
+library(here)
+library(english)
+library(dplyr)
+library(ggplot2)
+library(trekcolors)
+library(papaja)
+
+# Load R scripts located in R/ ------------------------------------------------
+source(here("R", "data-simulation.R"))
+source(here("R", "printing.R"))
+
+# Set default options for knitr code chunks -----------------------------------
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Introduction
+
+The number of deaths I have listed on the *Enterprise* over the past several weeks is growing, and no matter the circumstance they all share one thing in common—--each and every one of them wore a red uniform. I am conducting a pilot study comparing the average severity of injuries between red and blue uniformed Starfleet officers to investigate. If there are any significant differences I will approach First Officer Spock with my findings for further study. 
+
+# Methodology
+
+## Participants
+
+```{r simulate-data}
+# Set seed for random number generation in data simulation
+set.seed(42)
+
+# Simulate data for a balanced independent t-test
+df <- simulate_data(n = 100, mean_red = 7, mean_blue = 4)
+```
+
+```{r participants}
+# Get the total number of Starfleet officers in this pilot study
+n <- nrow(df)
+
+# Get the total number of Starfleet officers in red uniforms
+n_red <- count(df, uniform_colour) %>%
+  filter(uniform_colour == "red") %>%
+  pull(n)
+
+# Get the total number of Starfleet officers in blue uniforms
+n_blue <- count(df, uniform_colour) %>%
+  filter(uniform_colour == "blue") %>%
+  pull(n)
+```
+
+`r as.character(english(n))` Starfleet officers on board the starship Enterprise participated my pilot study, with `r n_red` officers in red uniforms, and `r n_blue` officers in blue uniforms. Officers with yellow uniforms were not included in my pilot study. The Starfleet uniform colours can be seen in Figure\ \@ref(fig:starfleet-divisions).
+
+<!-- ------------------------------------------------------------------------------------------ -->
+(ref:starfleet-divisions) Depiction of Starfleet uniform colours.
+
+```{r starfleet-divisions, fig.cap="(ref:starfleet-divisions)"}
+# Include image in output -----------------------------------------------------
+knitr::include_graphics(here("Figures", "starfleet-divisions.jpg"))
+```
+
+## Design
+
+I used a independent between-groups design to test my hypothesis, with uniform colour (red, blue) as my independent variable. Severity of injury---my dependent variable---was measured on a 10-point scale developed by @phlox2153, where one represented the lowest severity and ten the highest.
+
+## Procedure
+
+Our procedure was simple: My medical team and I recorded the severity of injury and uniform colour for any patients that came into sickbay during the pilot study period. Patients with multiple visits had their severity of injury scores averaged at the end of the period so their was only one score per participant.
+
+# Results
+
+```{r descriptives}
+# get mean and sd
+descriptives <- df %>%
+  group_by(uniform_colour) %>%
+  summarise(mean = sprintf("%.2f", mean(injury_severity)),
+            sd   = sprintf("%.2f", sd(injury_severity)))
+# filter by group
+descriptives_red  <- filter(descriptives, uniform_colour == "red")
+descriptives_blue <- filter(descriptives, uniform_colour == "blue")
+```
+
+```{r ttest}
+# run a t-test
+result <- t.test(injury_severity ~ uniform_colour, data = df)
+print_result <- print_t.test(result)
+```
+
+An independent t-test was used to test whether there were statistical differences in injury severity between Starfleet officers in red uniforms ($M = `r pull(descriptives_red, mean)`$, $SD = `r pull(descriptives_red, sd)`$) and blue uniforms ($M = `r pull(descriptives_blue, mean)`$, $SD = `r pull(descriptives_blue, sd)`$). The results of the t-test were, `r print_result`, which can be seen in Figure\ \@ref(fig:ttest-results).
+
+<!-- ------------------------------------------------------------------------------------------ -->
+(ref:ttest-results) Depiction of Starfleet uniform colours.
+
+```{r ttest-results, fig.cap="(ref:starfleet-divisions)"}
+ggplot(df, aes(x = uniform_colour, y = injury_severity, fill = uniform_colour)) +
+  geom_bar(stat = "summary", fun = "mean") +
+  geom_errorbar(stat = "summary", fun.data = mean_se, width = 0.66) +
+  scale_fill_trek() +
+  labs(x = "Uniform Colour",
+       y = "Average Severity of Injuries") +
+  theme_apa() +
+  theme(legend.position = "none")
+```
+
+# Discussion
+
+Based on the results of this pilot, I believe there is support for my hypothesis that wearing a red Starfleet uniform is somehow a danger to our officers. I will be approaching First Officer Spock with my findings for further study.
