@@ -47,7 +47,7 @@ output:
 #-----------------------------------------------------------------------------#
 
 # Ensure the project root is set up correctly using {here} --------------------
-here::i_am("mccoy-and-spock-2287.Rmd")
+here::i_am("mccoy-and-spock-2287-distill.Rmd")
 
 # Load packages used in this manuscript ---------------------------------------
 # Package descriptions were generated using the {annotater} package, available
