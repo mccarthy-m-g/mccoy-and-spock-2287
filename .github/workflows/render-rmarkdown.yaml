@@ -39,6 +39,11 @@ jobs:
           renv::restore()
         shell: Rscript {0}
 
+      - name: Install TinyTeX
+        run: |
+          tinytex::install_tinytex()
+        shell: Rscript {0}
+
       - name: Render Rmarkdown files
         run: |
           RMD_PATH=($(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '[.]Rmd$'))
