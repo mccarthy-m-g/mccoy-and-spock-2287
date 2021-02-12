@@ -60,7 +60,7 @@ output            : papaja::apa6_pdf
 #-----------------------------------------------------------------------------#
 
 # Ensure the project root is set up correctly using {here} --------------------
-here::i_am("mccoy-and-spock-2287.Rmd")
+here::i_am("mccoy-and-spock-2287-papaja.Rmd")
 
 # Load packages used in this manuscript ---------------------------------------
 library(here)
