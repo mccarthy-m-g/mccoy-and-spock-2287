@@ -1,0 +1,395 @@
+---
+title             : "Wearing a red uniform shortens lifespan in Starfleet officers"
+shorttitle        : "Red Starfleet Uniform"
+
+date              : "02-13-2287"
+
+author: 
+  - name          : "Leonard H. McCoy"
+    affiliation   : "1"
+    corresponding : yes    # Define only one corresponding author
+    address       : "USS Enterprise (NCC-1701)"
+    email         : "bones@starmail.uni"
+    role          :         
+    # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
+      - Conceptualization
+      - Formal Analysis
+      - Investigation
+      - Methodology
+      - Writing - Original Draft Preparation
+      - Writing - Review & Editing
+  - name          : "S'chn T'gal Spock"
+    affiliation   : "1"
+    role:
+      - Writing - Review & Editing
+
+affiliation:
+  - id            : "1"
+    institution   : "Starfleet"
+
+authornote: |
+  This is a working paper and we encourage reviewer comments.
+
+abstract: |
+  Damn it, man, I'm a doctor, not an undertaker!
+  
+keywords          : ["Starfleet Uniform", "Space Exploration", "Lifespan"]
+wordcount         : "1260"
+
+bibliography      : ["references.bib"]
+
+floatsintext      : yes
+figurelist        : no
+tablelist         : no
+footnotelist      : no
+linenumbers       : yes
+mask              : no
+draft             : no
+
+documentclass     : "apa6"
+classoption       : "man"
+output            : papaja::apa6_pdf
+---
+
+```{r setup, include=FALSE}
+#-----------------------------------------------------------------------------#
+# NOTE TO USERS: If you have cloned this project from GitHub please install   #
+# the {renv} R package `install.packages("remotes")` then run the following   #
+# command `renv::restore()` in your console to restore the state of this      #
+# project's libraries on your local machine.                                  #
+#-----------------------------------------------------------------------------#
+
+# Ensure the project root is set up correctly using {here} --------------------
+here::i_am("mccoy-and-spock-2287.Rmd")
+
+# Load packages used in this manuscript ---------------------------------------
+library(here)
+library(tidyverse)
+library(broom)
+library(glue)
+library(english)
+library(car)
+library(moments)
+library(Hmisc)
+library(kableExtra)
+library(emmeans)
+library(patchwork)
+library(magick)
+library(trekcolors)
+library(papaja)
+library(boomer)
+
+# Load R scripts located in R/ ------------------------------------------------
+source(here("R", "printing.R"))
+source(here("R", "descriptives.R"))
+source(here("R", "assumptions.R"))
+
+# Set default options for knitr code chunks -----------------------------------
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Introduction
+
+> “Enterprise Medical Log, Stardate 5327.4. Dr. Leonard McCoy recording. Captain Kirk and First Officer Spock were rescued 48 hours ago, along with several deceased members of the away team. They do not know why the creature ignored them during the attack, but I have my suspicions. The victims were all wearing red shirts.”---@mccoy5327
+
+I am haunted by an uncomfortable reality: Over the past several weeks the number of deaths I have listed on the *Enterprise*^[The USS Enterprise (NCC-1701), a Constitution-class starship launched by Starfleet in the year 2245.] is growing, and no matter the circumstance they all share one thing in common—each and every one of them wore a red uniform. I approached First Officer Spock with my concerns, but he brushed me off as thinking with undue emotions. Our operations division wears red uniforms, so this pattern of deaths was “logical" [@spock2287].
+
+Despite that damn Vulcan’s logic, he could not explain why himself and Captain Kirk had not yet suffered similar fates. I can find no reason why they are still alive, except, possibly, that the colour of their uniforms is somehow involved. Although improbable, it is the only hypothesis I have. Captain Kirk has employed Spock and I to conduct a study to investigate.
+
+The aim of our study is simple: We will test whether the uniform colour of Starfleet officers on board the Enterprise cause them to suffer more severe injuries during away missions. I hypothesize that, regardless of their division, officers wearing red uniforms will suffer more severe injuries. Spock states that this is illogical, and hypothesizes that members of the operations division will continue to suffer more severe injuries no matter their uniform colour.
+
+# Methodology
+
+```{r study-1-data}
+# Load study data for analysis ------------------------------------------------
+redshirts <- read_csv(here("Data", "redshirts.csv"))
+```
+
+## Participants
+
+```{r participants}
+# Get participant demographics for printing -----------------------------------
+demographics <- redshirts %>%
+  group_by(gender) %>%
+  summarise(n = n(),
+            age_mean = glue("$\\mathit{{M_{{age}}}} = {print_num(mean(age))}$"),
+            age_sd = glue("$\\mathit{{SD_{{age}}}} = {print_num(sd(age))}$")
+            ) %>%
+  split(.$gender)
+
+# Get the number of excluded participants for printing ------------------------
+exclusions <- str_to_title(english(6)) # for lowercase wrap in as.character()
+```
+
+`r nrow(redshirts)` Starfleet officers on board the starship Enterprise participated in our study, `r demographics$man$n` of which identified as men (`r demographics$man$age_mean`, `r demographics$man$age_sd`) and `r demographics$woman$n` as women (`r demographics$woman$age_mean`, `r demographics$woman$age_sd`). Myself, First Officer Spock, and Captain Kirk did not participate in the study. `r exclusions` redshirts who were supposed to participate were excluded from the study. A can be seen in Figure\ \@ref(fig:rip-redshirts), Captain Kirk foolishly sent them on an away mission; we have lost all contact since.
+
+<aside>
+<!-- ------------------------------------------------------------------------------------------ -->
+(ref:rip-redshirts) Captain Kirk sending a team of redshirts on an away mission to the Klingon supermarkets on Qo'noS.
+
+```{r rip-redshirts, fig.cap="(ref:rip-redshirts)"}
+# Include image in output -----------------------------------------------------
+knitr::include_graphics(here("Figures", "redshirt-lineup.jpeg"))
+```
+</aside>
+
+## Design
+
+We used a 3x3 independent design to test our hypotheses, with division (science/medical, command, operations) and uniform colour (blue, yellow, red) as independent variables. The Starfleet designations for divisions and their uniform colours can be seen in Figure\ \@ref(fig:starfleet-divisions). Severity of injury---our dependent variable---was measured on a 10-point scale developed by @phlox2153, where one represented the lowest severity and ten the highest. Examples of lower severity injuries include broken bones, cellular damage, or curable infections obtained during copulation with an alien species. Higher severity injuries include decapitation by Bat'leth, exposure to delta-particle radiation, or being crushed by Tribbles.^[A Klingon's worst nightmare.]
+
+<aside>
+<!-- ------------------------------------------------------------------------------------------ -->
+(ref:starfleet-divisions) Depiction of Starfleet divisions and their respective uniform colours.
+
+```{r starfleet-divisions, fig.cap="(ref:starfleet-divisions)"}
+# Include image in output -----------------------------------------------------
+knitr::include_graphics(here("Figures", "starfleet-divisions.jpg"))
+```
+</aside>
+
+## Procedure
+
+Our procedure was simple, although imperfect as First Officer Spock wants us to remind you. Each Starfleet officer was randomly assigned a uniform colour they were to wear over a one month period, however, they remained within their current division due to operational constraints. Aside from this, each officer continued with their regular duties aboard the Enterprise. My medical team and I then recorded the severity of injury, division, and uniform colour for any patients that came into sickbay during the study period. Patients with multiple visits had their severity of injury scores averaged at the end of the period so their was only one score per participant.
+
+# Results
+
+## Two-way ANOVA assumptions
+
+```{r assumption-normality}
+# Get skewness, kurtosis and Shapiro-Wilk (normality) -------------------------
+# - Skewness should be in the range of +/- 2
+# - Kurtosis should be in the range of +/- 7
+# - Significance indicates the assumption is violated
+assumption_normality <-
+  test_normality(redshirts,
+                 dv = injury_severity,
+                 group_by = c(division, uniform_colour)) %>%
+  # Prepare table for printing
+  mutate(cell = str_to_title(str_replace_all(cell, "_", " "))) %>%
+  rowwise() %>%
+  mutate(across(skewness:statistic, print_num)) %>%
+  mutate(p.value = print_p(p.value, in_table = TRUE)) %>%
+  ungroup() %>%
+  rename("Cell" = cell,
+         "Skewness" = skewness,
+         "Kurtosis" = kurtosis,
+         "W" = statistic,
+         "df" = df,
+         "p" = p.value)
+```
+
+```{r assumption-variance}
+# Run Levene's test on DV (homogeneity of variance) ---------------------------
+# - Significance indicates the assumption is violated
+assumption_variance <-
+  car::leveneTest(injury_severity ~ division*uniform_colour,
+                  data = redshirts,
+                  center = mean) %>%
+  # Prepare for printing
+  broom::tidy() %>%
+  mutate(statistic = print_num(statistic)) %>%
+  mutate(p.value = print_p(p.value)) %>%
+  mutate(print = glue("$F({df}, {df.residual}) = {statistic}$, $p {p.value}$"))
+```
+
+Our data met two of the assumptions for an independent two-way ANOVA. Specifically, injury severity was measured on an interval scale, all observations for injury severity were independent, and Levene’s test showed that the variances for injury severity between each of the experiment cells were equal, `r assumption_variance$print`. One assumption was not met. Shapiro-Wilk’s test of normality showed that the distribution of injury severity within most of the experiment cells was significantly different from a normal distribution (see Table\ \@ref(tab:normality-table)); however, as discussed in @mudd2266, meeting this assumption is unnecessary for our analyses due to statistical advances in the late 21st century. Because of this, we continued with our analysis as planned.
+
+```{r normality-table}
+# Print table with caption in manuscript --------------------------------------
+assumption_normality %>%
+  kbl(caption = "Table Showing Assumption of Normality Tests.",
+      align = c("l", rep("r", 5)),
+      booktabs = TRUE) %>%
+  row_spec(0, bold = TRUE, italic = TRUE)
+```
+
+## Two-way ANOVA results
+
+```{r descriptive-statistics}
+# Get descriptive statistics and prep for printing ----------------------------
+descriptives <- redshirts %>%
+  get_descriptives(dv = injury_severity, group_by = uniform_colour) %>%
+  rowwise() %>%
+  mutate(print = glue("$\\mathit{{M}} = {print_num(mean)}$, ",
+                      "$\\mathit{{SD}} = {print_num(std_dev)}$")
+         ) %>%
+  ungroup() %>%
+  split(.$uniform_colour)
+```
+
+```{r two-way-anova}
+# Run the two-way ANOVA with Type II sums of squares to test main effects -----
+model <- aov(injury_severity ~ division*uniform_colour, data = redshirts)
+
+# Get the two-way ANOVA table for statistical significance interpretation
+model_summary <- tidy(model)
+
+# Get effect sizes for practical significance interpretation
+effsize <- effectsize::omega_squared(model) %>%
+  as_tibble() %>%
+  select(term = Parameter, omegasq.partial = Omega2_partial)
+
+# Prepare model for printing --------------------------------------------------
+model_list <- model_summary %>%
+  left_join(effsize) %>%
+  mutate(term = str_replace(term, ":", "_x_")) %>%
+  mutate(df.residual = pull(filter(model_summary, term == "Residuals"), df),
+         .after = df) %>%
+  rowwise() %>%
+  mutate(across(sumsq:statistic, print_num)) %>%
+  mutate(across(c(p.value, omegasq.partial), print_p)) %>%
+  mutate(print = glue("$F({df}, {df.residual}) = {statistic}$, ",
+                      "$p {p.value}$, ",
+                      "$\\omega^2_p {omegasq.partial}$")) %>%
+  ungroup() %>%
+  split(.$term)
+```
+
+```{r post-hoc}
+# Follow up simple main effect of uniform colour ------------------------------
+marginal <- emmeans(model, "uniform_colour")
+
+marginal_contrast <- marginal %>%
+  contrast(method = "pairwise") %>%
+  tidy()
+
+marginal_effsize <- marginal %>%
+  eff_size(sigma = sigma(model), edf = df.residual(model)) %>%
+  tidy() %>%
+  rename(eff.size = estimate) %>%
+  select(contrast, eff.size)
+
+# Prepare contrasts for printing ----------------------------------------------
+marginal_list <- marginal_contrast %>%
+  left_join(marginal_effsize, by = "contrast") %>% 
+  mutate(contrast = str_replace(contrast, "[[:space:]]-[[:space:]]", "_x_")) %>%
+  # rowwise mutation is necessary when using `abs()`
+  rowwise() %>%
+  mutate(statistic = print_num(statistic, abs = TRUE)) %>%
+  mutate(eff.size = abs(eff.size)) %>%
+  ungroup() %>%
+  # end of rowwise computation
+  mutate(across(c(adj.p.value, eff.size), print_p)) %>%
+  mutate(print = glue("$t({df}) = {statistic}$, ",
+                      "$p_{{\\mathit{{adj}}}} {adj.p.value}$, ",
+                      "$d {eff.size}$")) %>%
+  split(.$contrast)
+```
+
+There was no significant main effect of division, `r model_list$division$print`, nor was there a significant interaction effect, `r model_list$division_x_uniform_colour$print`. In support of my hypothesis (and in contempt of Spock's), there was a significant main effect of uniform colour on severity of injury, `r model_list$uniform_colour$print`. This indicates different uniform colours affected the severity of injuries Starfleet officers suffered. Specifically, post-hoc pairwise comparisons corrected using the Tukey method found that officers wearing red uniforms (`r descriptives$red$print`) suffered significantly worse injuries than officers wearing blue uniforms (`r descriptives$blue$print`), `r marginal_list$blue_x_red$print`, or yellow uniforms (`r descriptives$yellow$print`), `r marginal_list$red_x_yellow$print`. However, officers wearing blue and yellow uniforms had no difference in the severity of their injuries, `r marginal_list$blue_x_yellow$print`. Thus, my hypothesis was confirmed. These differences can be seen in Figure\ \@ref(fig:model-plot).
+
+<!-- ------------------------------------------------------------------------------------------ -->
+(ref:model-plot) Two science officers dawning a red Starfleet uniform (A). The result of said uniform on their lifespans (B).
+
+```{r model-plot, fig.cap="(ref:model-plot)"}
+# create bar plot -------------------------------------------------------------
+plot_bar <- redshirts %>%
+  mutate(division = fct_relabel(division,
+                                ~ str_to_title(str_replace(.x, "_", "/")))) %>%
+  mutate(uniform_colour = fct_relabel(fct_relevel(uniform_colour, "red", "yellow"),
+                                      str_to_title)) %>% 
+  ggplot(aes(x = division, y = injury_severity, fill = uniform_colour)) +
+  stat_summary(fun = mean, geom = "bar", position = "dodge") +
+  stat_summary(fun.data = "mean_cl_normal", geom = "errorbar",
+               position = position_dodge(width = 0.90), width = 0.2) +
+  scale_y_continuous(limits = c(0, 10)) +
+  scale_fill_trek() + 
+  labs(x = "Division",
+       y = "Average Severity of Injuries",
+       fill = "Uniform Colour") +
+  theme_apa() +
+  guides(fill = guide_legend(title.position = "top",
+                             override.aes = list(size = 2)
+                             )) +
+  theme(legend.direction = "horizontal",
+        legend.background = element_rect(colour ="black"),
+        legend.title = element_text(size = 9), 
+        legend.text = element_text(size = 9),
+        legend.margin = margin(0.5, 1, 0.5, 1, "lines"),
+        legend.position = c(0.79, 0.9))
+
+# print bar plot
+plot_bar
+```
+
+# Discussion
+
+The results of our experiment confirmed that wearing a red uniform causes Starfleet officers to suffer more severe injuries, regardless of the division they work in. However, our results do not confirm the source of causality. That is, are the uniforms causing Starfleet officers to behave more recklessly, resulting in more severe injuries; or are the uniforms inviting external dangers across the cosmos? As of now we are unsure, but preliminary data suggests the former may be the culprit (see Figure\ \@ref(fig:redshirt-behaviour)).
+
+<!-- ------------------------------------------------------------------------------------------ -->
+(ref:redshirt-behaviour) Two science officers dawning a red Starfleet uniform (A). The result of said uniform on their lifespans (B).
+
+```{r redshirts-plot-prep, include=FALSE}
+# Read images and plot them onto a ggplot for use by {patchwork} --------------
+redshirt_behaviour_1 <-
+  magick::image_read(here("Figures", "redshirt-behaviour-1.jpg")) %>%
+  magick::image_ggplot()
+
+redshirt_behaviour_2 <-
+  magick::image_read(here("Figures", "redshirt-behaviour-2.jpg")) %>%
+  magick::image_ggplot()
+
+# Combine plots into a single figure to prepare for printing ------------------
+redshirt_plot <-
+  (redshirt_behaviour_1 + theme(plot.margin = unit(c(0,15,0,0), "pt"))) +
+  (redshirt_behaviour_2 + theme(plot.margin = unit(c(0,0,0,15), "pt"))) +
+  plot_annotation(tag_levels = "A")
+  
+# Save the combined plot to a file then crop whitespace to clean up -----------
+ggsave(here("Figures", "redshirts-plot.png"))
+knitr::plot_crop(here("Figures", "redshirts-plot.png"))
+```
+
+```{r redshirt-behaviour, fig.cap="(ref:redshirt-behaviour)"}
+# Load then print the combined plot along with its figure caption
+knitr::include_graphics(here("Figures", "redshirts-plot.png"))
+```
+
+## Limitations
+
+Spock would like to remind our readers that, because their was no random assignment to division, this is not a true experiment. So our results should be taken with caution. Future studies building on the work here should consider randomly assigning participants both a uniform colour *and* division. Training exercises at Starfleet Academy would be an excellent candidate for such an experiment.
+
+# Conclusion
+
+It appears, after careful observation, that wearing a red Starfleet uniform during space exploration is bad for one's health, often leading to an untimely demise. As a doctor who does not wish to become an undertaker, it is my recommendation that Starfleet investigate the cause(s) underlying red uniform's effects on officer behaviour. To boldly go where no one has gone before.
+
+## Open Science
+
+The code and materials for analyzing data and generating the manuscript for this project are available in the project's [GitHub repository](https://github.com/mccarthy-m-g/mccoy-and-spock-2287). This project was written using `r R.version.string` [@rcore2020] in RStudio version 1.4.1103 [@rstudio2021]. Statistical analyses were done using the `moments` [@moments2015], `car` [@car2019], `stats` [@rcore2020], and `emmeans` [@emmeans2021] R packages. To easily inspect the intermediate output of data analysis code pipes from this manuscript, we suggest using the `boomer` [@boomer2021] R package. All packages and dependencies used in this project can be seen in Table\ \@ref(tab:packages-used): 
+
+```{r packages-used, warning=FALSE, error=FALSE, message=FALSE}
+# read renv.lock
+renvLock <- jsonlite::read_json(here("renv.lock"))
+
+# write R packages from renv.lock to r-packages.bib
+knitr::write_bib(names(renvLock$Packages), "r-packages.bib")
+
+# get location of package versions and sources
+pkg_version <- paste0("renvLock$Packages$", names(renvLock$Packages), "$Version")
+pkg_source <- paste0("renvLock$Packages$", names(renvLock$Packages), "$Repository")
+
+# create tibble of packages, their versions, and their source
+pkg_df <- tibble::tibble(
+  Package = names(renvLock$Packages),
+  Version = sapply(pkg_version, function(x) eval(parse(text = x))),
+  Source = sapply(pkg_source, function(x) eval(parse(text = x)))
+)
+# print table
+pkg_df %>%
+  kbl(caption = "All Packages and Dependencies for this Project.",
+      align = c("l", "r", "r"),
+      longtable = TRUE,
+      booktabs = TRUE) %>%
+  row_spec(0, bold = TRUE, italic = TRUE) %>%
+  kable_styling(latex_options = "repeat_header")
+```
+
+## Author Contributions
+
+McCoy came up with the idea for this experiment and conducted all data collection and analysis. McCoy and Spock wrote this paper, however, Spock's main contribution was merely questioning McCoy's logic.
+
+## Fair Dealing
+
+Any of the trademarks, service marks, collective marks, design rights or similar rights that are mentioned, used, or cited in this manuscript are the property of their respective owners. They are used here as fair dealing for the purpose of education, parody, and satire in accordance with [section 29 of the Copyright Act](https://laws-lois.justice.gc.ca/eng/acts/c-42/page-8.html#h-103270) and do not infringe copyright.
+
+# References
