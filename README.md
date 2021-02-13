@@ -15,7 +15,7 @@ The project incorporates a number of principles crucial to reproducible science,
 -   R package environment control using {renv}
 -   Version control using GitHub
 -   Continuous integration using GitHub Actions
--   Time stamps using GitHub Releases
+-   Time stamped project snapshots using GitHub Releases
 -   Easy access for non-technical users using Open Science Framework integration
 
 ## Reproducible manuscript files
