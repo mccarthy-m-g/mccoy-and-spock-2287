@@ -8,6 +8,8 @@
 
 *Damn it, man, I'm a doctor, not an undertaker!*
 
+## Project overview
+
 This repository contains a fake scientific paper, written by Bones and Spock from the television series *Star Trek: The Original Series*, made for showcasing how to write a reproducible manuscript in R Markdown. I created it for a workshop as a follow-up to my talk [Doing reproducible science: An opinionated introduction](https://michaelmccarthy.netlify.app/talk/osssg-2021a/).
 
 The project incorporates a number of principles crucial to reproducible science, including:
