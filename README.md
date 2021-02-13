@@ -17,3 +17,11 @@ The project incorporates a number of principles crucial to reproducible science,
 -   Continuous integration using GitHub Actions
 -   Time stamps using GitHub Releases
 -   Easy access for non-technical users using Open Science Framework integration
+
+## Reproducible manuscript files
+
+The `mccoy-and-spock-2287-distill.Rmd` file includes a complete example of a reproducible manuscript, along with detailed explanations of important concepts for writing and coding in R Markdown documents.
+
+The `mccoy-and-spock-2287-pilot.Rmd` file contains a shorter example intended for introducing beginners to some of the central concepts of R Markdown, such as inline R code, embedding figues, and using bibtex citations.
+
+The `mccoy-and-spock-2287-papaja.Rmd` file contains the same content as `mccoy-and-spock-2287-distill.Rmd`; it is simply intended to demonstrate `papaja's` APA style output.
