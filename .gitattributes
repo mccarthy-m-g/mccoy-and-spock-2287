@@ -1,5 +1,5 @@
-# Reclassify
-*.Rmd linguist-language=RMarkdown
+# Mark as detectable
+*.Rmd linguist-detectable=true
 
 # Mark as documentation
 *.html linguist-documentation
