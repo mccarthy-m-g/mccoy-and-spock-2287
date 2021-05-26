@@ -28,4 +28,4 @@ The `mccoy-and-spock-2287-distill.Rmd` file includes a complete example of a rep
 
 The `mccoy-and-spock-2287-pilot.Rmd` file contains a shorter example intended for introducing beginners to some of the central concepts of R Markdown, such as inline R code, embedding figues, and using bibtex citations. The knitted manuscript can be viewed [here](https://mccarthy-m-g.github.io/mccoy-and-spock-2287/mccoy-and-spock-2287-pilot.html).
 
-The `mccoy-and-spock-2287-papaja.Rmd` file contains the same content as `mccoy-and-spock-2287-distill.Rmd`; it is simply intended to demonstrate `papaja's` APA style output. The knitted manuscript can be viewed [here](https://mccarthy-m-g.github.io/mccoy-and-spock-2287/mccoy-and-spock-2287-papaja.html).
+The `mccoy-and-spock-2287-papaja.Rmd` file contains the same content as `mccoy-and-spock-2287-distill.Rmd`; it is simply intended to demonstrate `papaja's` APA style output. The knitted manuscript can be viewed [here](https://mccarthy-m-g.github.io/mccoy-and-spock-2287/mccoy-and-spock-2287-papaja.pdf).
