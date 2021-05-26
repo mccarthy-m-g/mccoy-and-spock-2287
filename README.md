@@ -20,10 +20,12 @@ The project incorporates a number of principles crucial to reproducible science,
 -   Time stamped project snapshots using GitHub Releases
 -   Easy access for non-technical users using Open Science Framework integration
 
+Additionally, the project uses [GitHub Pages](https://pages.github.com/) to deploy the knitted R Markdown manuscripts to their own webpages.
+
 ## Reproducible manuscript files
 
-The `mccoy-and-spock-2287-distill.Rmd` file includes a complete example of a reproducible manuscript, along with detailed explanations of important concepts for writing and coding in R Markdown documents.
+The `mccoy-and-spock-2287-distill.Rmd` file includes a complete example of a reproducible manuscript, along with detailed explanations of important concepts for writing and coding in R Markdown documents. The knitted manuscript can be viewed [here](https://mccarthy-m-g.github.io/mccoy-and-spock-2287/mccoy-and-spock-2287-distill.html).
 
-The `mccoy-and-spock-2287-pilot.Rmd` file contains a shorter example intended for introducing beginners to some of the central concepts of R Markdown, such as inline R code, embedding figues, and using bibtex citations.
+The `mccoy-and-spock-2287-pilot.Rmd` file contains a shorter example intended for introducing beginners to some of the central concepts of R Markdown, such as inline R code, embedding figues, and using bibtex citations. The knitted manuscript can be viewed [here](https://mccarthy-m-g.github.io/mccoy-and-spock-2287/mccoy-and-spock-2287-pilot.html).
 
-The `mccoy-and-spock-2287-papaja.Rmd` file contains the same content as `mccoy-and-spock-2287-distill.Rmd`; it is simply intended to demonstrate `papaja's` APA style output.
+The `mccoy-and-spock-2287-papaja.Rmd` file contains the same content as `mccoy-and-spock-2287-distill.Rmd`; it is simply intended to demonstrate `papaja's` APA style output. The knitted manuscript can be viewed [here](https://mccarthy-m-g.github.io/mccoy-and-spock-2287/mccoy-and-spock-2287-papaja.html).
